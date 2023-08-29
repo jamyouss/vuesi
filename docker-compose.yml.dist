@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  app:
+    image: node:18
+    working_dir: /vuesi
+    command: yarn dev --host
+    ports:
+      - 24678:24678
+      - 3000:3000
+    volumes:
+      - ./:/vuesi
+    depends_on:
+      - varnish
+
+  varnish:
+    platform: linux/amd64
+    image: varnish:6.6
+    ports:
+      - 8080:80
+    volumes:
+      - ./config/varnish:/etc/varnish:ro
+    environment:
+      - VARNISH_SIZE=128M
+
