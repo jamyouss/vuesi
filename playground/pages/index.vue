@@ -6,14 +6,14 @@
 </template>
 
 <script setup lang="ts">
-import { useESI, resolveComponent, useRequestEvent } from '#imports'
 import { appendResponseHeader } from 'h3'
+import { useESI, resolveComponent, useRequestEvent } from '#imports'
 
-const WelcomeESI = useESI(resolveComponent('Welcome'))
-const CommentESI = useESI(resolveComponent('Comments'))
+const WelcomeESI = useESI('Welcome', resolveComponent('Welcome'))
+const CommentESI = useESI('Comments', resolveComponent('Comments'))
 
 if (process.server) {
   const event = useRequestEvent()
-  appendResponseHeader(event, 'cache-controle', 'public, max-age=3600')
+  appendResponseHeader(event!, 'cache-control', 'public, max-age=3600')
 }
 </script>

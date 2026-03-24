@@ -5,90 +5,163 @@
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-Nuxt Vue ESI module for a Blazing-fast Server-Side Rendering.
+Nuxt module for Edge Side Includes (ESI) — cache individual Vue components independently at the CDN/reverse proxy layer (e.g., Varnish).
 
-- [✨ &nbsp;Release Notes](/CHANGELOG.md)
+## How It Works
 
+1. Components wrapped with `useESI` render an `<esi:include>` tag instead of their content during SSR.
+2. The response includes a `Surrogate-Control: content=ESI/1.0` header, signaling the reverse proxy to process ESI tags.
+3. The proxy (e.g., Varnish) fetches each fragment independently via the fragment endpoint (`/api/_fragment`).
+4. Each fragment can define its own `cache-control` header, enabling per-component cache TTLs.
+5. On the client side, hydration data is injected via inline scripts so Vue picks up the server-rendered state.
 
 ## Quick Setup
 
 1. Add `vuesi` dependency to your project
 
 ```bash
-# Using yarn
-yarn add --dev vuesi
-
-# Using npm
-npm install --save-dev vuesi
+yarn add vuesi
+# or
+npm install vuesi
 ```
 
-2. Add `vuesi` to the `modules` section of `nuxt.config.ts` and configure if needed
+2. Add `vuesi` to the `modules` section of `nuxt.config.ts`
 
-```js
+```ts
 export default defineNuxtConfig({
-  modules: [
-    'vuesi'
-  ],
+  modules: ['vuesi'],
   vuesi: {
-    // Options
+    // Options (all optional)
+    enabled: true,
+    fragmentPath: '/api/_fragment',
+    ignoreErrors: true
   }
 })
 ```
 
 ### Options
 
-| Option         | Type      | Default          | Description                               |
-|----------------|-----------|------------------|-------------------------------------------|
-| `enabled`      | `Boolean` | `true`           | Enable or disable the module              |
-| `fragmentPath` | `String`  | `/api/_fragment` | ESI Fragement API Path                    |
-| `ignoreErrors` | `Boolean` | `true`           | Ignore errors when fetching ESI fragments |
+| Option         | Type      | Default          | Description                                                    |
+|----------------|-----------|------------------|----------------------------------------------------------------|
+| `enabled`      | `boolean` | `true`           | Enable or disable ESI tag generation                           |
+| `fragmentPath` | `string`  | `/api/_fragment` | URL path for the ESI fragment endpoint                         |
+| `ignoreErrors` | `boolean` | `true`           | Add `onerror="continue"` to `<esi:include>` tags               |
 
-### That's it! You can now use VueESI in your Nuxt app ✨
+## Usage
 
-## Examples
+### 1. Define a component with ESI fragment data
 
-```
+Each component that should be independently cached must export a `Vuesi` object with a `props` function (and optionally a `cacheControl` string):
+
+```vue
 <template>
-  <WelcomeESI username="John DOE" />
+  Bonjour {{ props.username }}
+</template>
+
+<script lang="ts">
+import type { FragmentData } from 'vuesi'
+
+export const Vuesi: FragmentData = {
+  cacheControl: 'public, max-age=120',
+  props: async () => {
+    const user = await $fetch('https://api.example.com/users/1')
+    return { username: user.name }
+  }
+}
+</script>
+
+<script setup lang="ts">
+const props = defineProps<{ username: string }>()
+</script>
+```
+
+### 2. Use `useESI` in your page
+
+```vue
+<template>
+  <WelcomeESI />
 </template>
 
 <script setup lang="ts">
 import { useESI, resolveComponent } from '#imports'
 
-const WelcomeESI = useESI(resolveComponent('Welcome'))
+const WelcomeESI = useESI('Welcome', resolveComponent('Welcome'))
 </script>
 ```
 
+The first argument is the **component name** (as registered by Nuxt's auto-import). The second argument is the resolved component instance.
+
+### 3. Set up a reverse proxy with ESI support
+
+For development, a Docker Compose setup with Varnish is provided:
+
+```bash
+cp docker-compose.yml.dist docker-compose.yml
+docker-compose up
+```
+
+The Varnish config in `config/varnish/default.vcl` enables ESI processing when the `Surrogate-Control` header is present.
+
+## Security Notes
+
+- **Props in URLs:** Props passed to ESI-wrapped components are serialized into the fragment URL query string. These URLs are visible in proxy logs and cache keys. **Do not pass sensitive data as props to ESI components.** Use the `Vuesi.props()` function to fetch sensitive data server-side instead.
+- **Component registry:** Only components registered by Nuxt's auto-import system can be loaded via the fragment endpoint. Arbitrary file paths are not accepted.
+
+## API Reference
+
+### `useESI(name: string, component: Component): Component`
+
+Wraps a component for ESI rendering.
+
+- `name` — The PascalCase component name as registered by Nuxt (e.g., `'Welcome'`, `'Comments'`)
+- `component` — The resolved component instance (via `resolveComponent()`)
+
+Returns a new component that renders `<esi:include>` on the server (when ESI is enabled) or the original component with hydrated props on the client.
+
+### `FragmentData` interface
+
+Exported from each ESI-enabled component as `Vuesi`:
+
+```ts
+interface FragmentData {
+  cacheControl?: string
+  props: () => Promise<Record<string, unknown>>
+}
+```
+
+- `cacheControl` — Optional HTTP `Cache-Control` header value for this fragment
+- `props` — Async function that returns the props to pass to the component
+
 ## Development
-
-For development/testing purposes, docker-compose config is provided with basic varnish config.
-
-1. Clone this repository
-2. Install dependencies using `yarn install` or `npm install`
-3. Start development server using `docker-compose up`
-
-### Commands
 
 ```bash
 # Install dependencies
-npm install
+yarn install
 
 # Generate type stubs
-npm run dev:prepare
+yarn dev:prepare
 
 # Develop with the playground
-npm run dev
+yarn dev
 
 # Build the playground
-npm run dev:build
+yarn dev:build
 
 # Run ESLint
-npm run lint
+yarn lint
 
-# Run Vitest
-npm run test
-npm run test:watch
+# Run tests
+yarn test
 ```
+
+### Docker (Varnish)
+
+```bash
+cp docker-compose.yml.dist docker-compose.yml
+docker-compose up
+```
+
+Access the app through Varnish at `http://localhost:8080`.
 
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/vuesi/latest.svg?style=flat&colorA=18181B&colorB=28CF8D

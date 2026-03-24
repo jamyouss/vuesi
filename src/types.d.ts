@@ -10,12 +10,19 @@ export interface EsiAttributes {
 }
 
 export interface FragmentData {
-  cacheControl: string
-  props: () => Promise<{ [key: string]: any }>
+  cacheControl?: string
+  props: () => Promise<Record<string, unknown>>
+}
+
+export interface VuesiComponentRegistry {
+  [name: string]: string
 }
 
 declare module 'nuxt/schema' {
   interface PublicRuntimeConfig {
-    vuesi: ModuleOptions
+    vuesi: Pick<ModuleOptions, 'enabled' | 'fragmentPath' | 'ignoreErrors'>
+  }
+  interface RuntimeConfig {
+    vuesiComponentNames: string[]
   }
 }
