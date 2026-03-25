@@ -2,6 +2,8 @@ export interface ModuleOptions {
   enabled: boolean
   fragmentPath: string
   ignoreErrors: boolean
+  scanComponents?: boolean
+  components?: Record<string, string>
 }
 
 export interface EsiAttributes {

@@ -34,9 +34,10 @@ export default defineNuxtModule<ModuleOptions>({
   defaults: {
     enabled: true,
     fragmentPath: '/api/_fragment',
-    ignoreErrors: true
+    ignoreErrors: true,
+    scanComponents: true
   },
-  setup (options, nuxt) {
+  async setup (options, nuxt) {
     const { resolve } = createResolver(import.meta.url)
     const runtimeDir = fileURLToPath(new URL('./runtime', import.meta.url))
 
@@ -46,9 +47,20 @@ export default defineNuxtModule<ModuleOptions>({
       ignoreErrors: options.ignoreErrors
     }
 
-    // Scan components directory and build a registry
-    const componentsDir = pathResolve(nuxt.options.srcDir, 'components')
-    const registry = scanComponents(componentsDir)
+    // Source 1: Scan app components directory (can be disabled)
+    const registry: VuesiComponentRegistry = {}
+    if (options.scanComponents !== false) {
+      const componentsDir = pathResolve(nuxt.options.srcDir, 'components')
+      Object.assign(registry, scanComponents(componentsDir))
+    }
+
+    // Source 2: Explicit components from module options
+    if (options.components) {
+      Object.assign(registry, options.components)
+    }
+
+    // Source 3: Hook for libraries to register their own ESI components
+    await nuxt.callHook('vuesi:components' as any, registry)
 
     // Generate a virtual module that maps component names to lazy imports
     // This allows Vite to bundle the components and resolve .vue files at build time
