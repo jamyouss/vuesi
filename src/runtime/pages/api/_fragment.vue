@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { v5 as uuidv5 } from 'uuid'
-import { appendResponseHeader, createError } from 'h3'
+import { createError } from 'h3'
 import { getScript } from '../../utils'
 import { useRoute, useHead, useRequestEvent } from '#imports'
 // @ts-ignore - generated at build time
@@ -46,7 +46,9 @@ const resolvedComponent = component.default
 
 if (component.Vuesi.cacheControl) {
   const event = useRequestEvent()
-  appendResponseHeader(event!, 'cache-control', component.Vuesi.cacheControl)
+  if (event) {
+    ;(event as any).__vuesiCacheControl = component.Vuesi.cacheControl
+  }
 }
 
 useHead({

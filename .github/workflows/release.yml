@@ -27,11 +27,11 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Lint
-        run: yarn lint
-
       - name: Prepare
         run: yarn dev:prepare
+
+      - name: Lint
+        run: yarn lint
 
       - name: Test
         run: yarn test

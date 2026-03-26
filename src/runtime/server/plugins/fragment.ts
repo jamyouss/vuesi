@@ -5,6 +5,7 @@ import { defineNitroPlugin, useRuntimeConfig } from '#imports'
 
 interface VuesiH3Event extends H3Event {
   __vuesiBody?: string
+  __vuesiCacheControl?: string
 }
 
 export default defineNitroPlugin((nitroApp: NitroApp) => {
@@ -54,6 +55,14 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     const vuesiEvent = event as VuesiH3Event
     if (vuesiEvent.__vuesiBody) {
       response.body = vuesiEvent.__vuesiBody
+    }
+
+    // Apply cache-control from the fragment component
+    if (vuesiEvent.__vuesiCacheControl) {
+      if (!response.headers) {
+        response.headers = {}
+      }
+      response.headers['cache-control'] = vuesiEvent.__vuesiCacheControl
     }
   })
 })
