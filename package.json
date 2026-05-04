@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@nuxt/kit": "^3.16.2",
-    "uuid": "^11.1.0"
+    "uuid": "^14.0.0"
   },
   "peerDependencies": {
     "vue": "^3.4.0"
