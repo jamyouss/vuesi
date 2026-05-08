@@ -46,7 +46,7 @@
     "changelogen": "^0.6.1",
     "consola": "^3.4.0",
     "eslint": "^8.57.0",
-    "nitropack": "^2.11.8",
+    "nitropack": "^2.13.4",
     "nuxt": "^3.16.2",
     "vitest": "^3.1.1",
     "typescript": "^5.8.2",
