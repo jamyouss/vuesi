@@ -50,8 +50,9 @@ sub vcl_recv
         unset req.http.x-vuesi-component;
         unset req.http.x-vuesi-props;
 
-        # Strip all headers that cause cache fragmentation
-        unset req.http.cookie;
+        # Cookie NOT stripped here on purpose - Vuesi.props() may need it.
+        # vcl_backend_response's Cache-Control check is what actually keeps
+        # a private/user-specific response out of the shared cache.
         unset req.http.accept;
         unset req.http.accept-language;
         unset req.http.accept-encoding;
@@ -75,7 +76,7 @@ sub vcl_hit {
         return (deliver);
     }
 
-    return (miss);
+    return (fetch);
 }
 
 # Subroutine called if a requested object is not found in cache
@@ -110,6 +111,15 @@ sub vcl_backend_response
     if (bereq.url ~ "^/api/_fragment") {
         unset beresp.http.vary;
         unset beresp.http.set-cookie;
+
+        # Varnish doesn't honor Cache-Control private/no-store on its own -
+        # without this, a user-specific fragment would still get cached and
+        # served to the next client hitting the same URL.
+        if (beresp.http.cache-control ~ "(?i)(private|no-store|no-cache)") {
+            set beresp.uncacheable = true;
+            set beresp.ttl = 120s;
+            return (deliver);
+        }
     }
 
     # Allow serving stale content while revalidating
