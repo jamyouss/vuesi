@@ -77,3 +77,7 @@ Configured via `nuxt.config.ts` under the `vuesi` key:
 ## Docker / Varnish
 
 `docker-compose.yml.dist` provides a dev setup with Node + Varnish for testing ESI processing end-to-end.
+
+## Code Style
+
+Keep comments minimal. One or two lines max, only for genuinely non-obvious "why" (a subtle invariant, a workaround, something that would surprise a reader) - not restating what the code does. Trim repeated explanations across multiple comment blocks down to one.
