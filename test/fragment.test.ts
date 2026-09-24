@@ -82,4 +82,28 @@ describe('fragment e2e', async () => {
 
     expect(html).toContain('Bonjour')
   })
+
+  test('a private component rendered inline (ESI disabled) downgrades the host page cache-control', async () => {
+    const ctx = useTestContext()
+    const response = await fetch(ctx.url + '/?private=true', {
+      headers: { 'x-vuesi-enabled': 'false' }
+    })
+    const html = await response.text()
+
+    // Confirms the fallback branch actually ran (component rendered inline,
+    // not as <esi:include>) rather than the assertion below passing for the
+    // wrong reason.
+    expect(html).not.toContain('<esi:include')
+    expect(html).toContain('user-specific-data')
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
+  })
+
+  test('a page with only public components keeps its own cache-control when ESI is disabled', async () => {
+    const ctx = useTestContext()
+    const response = await fetch(ctx.url + '/', {
+      headers: { 'x-vuesi-enabled': 'false' }
+    })
+
+    expect(response.headers.get('cache-control')).toBe('public, max-age=3600')
+  })
 })
