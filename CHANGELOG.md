@@ -1,3 +1,20 @@
+# 1.0.0 (2026-09-25)
+
+
+### Bug Fixes
+
+* enable public npm publishing for scoped package ([04c16ca](https://github.com/jamyouss/vuesi/commit/04c16cac2ae8eb432ea9b35fc27ab2221322b4ef))
+* honor Cache-Control and stop stripping cookies on fragment requests ([8d7fc90](https://github.com/jamyouss/vuesi/commit/8d7fc90deaaf6884c81df2d3cdc8e8fdf6f3924f))
+* prevent cross-user data leaks in the ESI-disabled fallback path ([2e19ae8](https://github.com/jamyouss/vuesi/commit/2e19ae82c743c377c82ebe1d28c8967dd9476b99))
+* security hardening, architecture improvements, and CI setup ([3622beb](https://github.com/jamyouss/vuesi/commit/3622beb4567763778e8b10b3ea4c41c51db166e3))
+* upgrade dependencies, fix CI lint order, and adapt tests for Nuxt 3.16 ([71d7881](https://github.com/jamyouss/vuesi/commit/71d7881408604ca41ebde3cd87d2289f646e0b25))
+
+
+### Features
+
+* extensible component registry and tag-triggered releases ([a4b7364](https://github.com/jamyouss/vuesi/commit/a4b7364120fb396684c9db0aa84a71c5faaa72f0))
+* init ([8d0dafa](https://github.com/jamyouss/vuesi/commit/8d0dafa60ed41a5ce99d9945b7901c7934c586a7))
+
 ## [0.1.2](https://github.com/jamyouss/vuesi/compare/v0.1.1...v0.1.2) (2026-09-25)
 
 
