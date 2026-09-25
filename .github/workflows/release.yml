@@ -2,14 +2,15 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
 
 jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
+      pull-requests: write
       id-token: write
 
     steps:
@@ -22,13 +23,9 @@ jobs:
         with:
           node-version: 22
           cache: yarn
-          registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-
-      - name: Prepare
-        run: yarn dev:prepare
 
       - name: Lint
         run: yarn lint
@@ -39,7 +36,14 @@ jobs:
       - name: Build
         run: yarn prepack
 
-      - name: Publish to npm
-        run: npm publish --provenance --access public
+      - name: Release
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          semantic_version: 25
+          branches: |
+            [
+              'main'
+            ]
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
