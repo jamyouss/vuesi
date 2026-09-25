@@ -12,7 +12,7 @@
         { "type": "chore", "release": false }
       ]
     }],
-    "@semantic-release/release-notes-generator",
+      "assets": ["package.json", "CHANGELOG.md"],
     ["@semantic-release/changelog", {
       "changelogFile": "CHANGELOG.md"
     }],
