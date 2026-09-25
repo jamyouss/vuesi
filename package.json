@@ -1,6 +1,6 @@
 {
-  "name": "@jamyouss/vuesi",
-  "version": "0.0.0",
+  "name": "vuesi",
+  "version": "0.2.0",
   "description": "Nuxt Vue ESI module for per-component edge caching",
   "repository": "https://github.com/jamyouss/vuesi",
   "license": "MIT",
