@@ -15,9 +15,7 @@
   "main": "./dist/module.cjs",
   "types": "./dist/types.d.ts",
   "files": [
-  "publishConfig": {
-    "access": "public"
-  },
+    "dist"
   ],
   "scripts": {
     "prepack": "nuxt-module-build",
