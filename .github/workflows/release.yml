@@ -24,10 +24,10 @@ jobs:
           cache: yarn
 
       - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
       - name: Prepare
         run: yarn dev:prepare
-        run: yarn install --frozen-lockfile
 
       - name: Lint
         run: yarn lint
