@@ -1,3 +1,10 @@
+## [0.1.2](https://github.com/jamyouss/vuesi/compare/v0.1.1...v0.1.2) (2026-09-25)
+
+
+### Bug Fixes
+
+* set npm package to public access ([d387be5](https://github.com/jamyouss/vuesi/commit/d387be582e06cf957133cc904c545be04efbe9f9))
+
 ## [0.1.1](https://github.com/jamyouss/vuesi/compare/v0.1.0...v0.1.1) (2026-09-25)
 
 
