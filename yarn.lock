@@ -345,6 +345,11 @@
   resolved "https://registry.npmjs.org/@colors/colors/-/colors-1.5.0.tgz"
   integrity sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==
 
+"@conventional-changelog/template@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@conventional-changelog/template/-/template-1.4.0.tgz#30a8680f2ab8d3a60a08e86bebb33fe8f0f8f100"
+  integrity sha512-aalGyl7dbB5PArRebDIX43ZvBlXrYm9uWzGJ26t+4SzJVPsOuvfILGGbw5X4yX7i50YEmJ8zvbiWnqH/AAnZqg==
+
 "@dxup/nuxt@^0.4.0":
   version "0.4.0"
   resolved "https://registry.npmjs.org/@dxup/nuxt/-/nuxt-0.4.0.tgz"
@@ -2413,30 +2418,7 @@
     micromatch "^4.0.0"
     p-reduce "^3.0.0"
 
-"@semantic-release/github@^12.0.0":
-  version "12.0.10"
-  resolved "https://registry.npmjs.org/@semantic-release/github/-/github-12.0.10.tgz"
-  integrity sha512-QskygvpX8hFx9UEbqJ+C46OIhaJjsysNQ8PYJPuRDc/ek5+dh8WYGD1ofUahCcGLAOmnnwZTcmCJCEXM8XxhRw==
-  dependencies:
-    "@octokit/core" "^7.0.0"
-    "@octokit/plugin-paginate-rest" "^15.0.0"
-    "@octokit/plugin-retry" "^8.0.0"
-    "@octokit/plugin-throttling" "^11.0.0"
-    "@semantic-release/error" "^4.0.0"
-    aggregate-error "^5.0.0"
-    debug "^4.3.4"
-    dir-glob "^3.0.1"
-    http-proxy-agent "^9.0.0"
-    https-proxy-agent "^9.0.0"
-    issue-parser "^7.0.0"
-    lodash-es "^4.17.21"
-    mime "^4.0.0"
-    p-filter "^4.0.0"
-    tinyglobby "^0.2.14"
-    undici "^7.0.0"
-    url-join "^5.0.0"
-
-"@semantic-release/github@^12.0.10":
+"@semantic-release/github@^12.0.0", "@semantic-release/github@^12.0.10":
   version "12.0.10"
   resolved "https://registry.yarnpkg.com/@semantic-release/github/-/github-12.0.10.tgz#a0489f6a2d30a977e38b680ae2ef7524b59be8ad"
   integrity sha512-QskygvpX8hFx9UEbqJ+C46OIhaJjsysNQ8PYJPuRDc/ek5+dh8WYGD1ofUahCcGLAOmnnwZTcmCJCEXM8XxhRw==
@@ -4127,6 +4109,13 @@ conventional-changelog-angular@^8.0.0:
   integrity sha512-6gfI3otXK5Ph5DfCOI1dblr+kN3FAm5a97hYoQkqNZxOaYa5WKfXH+AnpsmS+iUH2mgVC2Cg2Qw9m5OKcmNrIg==
   dependencies:
     compare-func "^2.0.0"
+
+conventional-changelog-conventionalcommits@^10.4.0:
+  version "10.4.0"
+  resolved "https://registry.yarnpkg.com/conventional-changelog-conventionalcommits/-/conventional-changelog-conventionalcommits-10.4.0.tgz#a75bb40f10731d66e0b4209dc1dd3ee0cf2925f3"
+  integrity sha512-Rriac6ZrAlVm6cy9Bz4NSp+WMHpwNXoPIYex+HjCgduAVUSbnew29DQjQw0C4g9u3HtSYzGiGY+pdBXAZo+4aA==
+  dependencies:
+    "@conventional-changelog/template" "^1.4.0"
 
 conventional-changelog-writer@^8.0.0:
   version "8.4.0"
