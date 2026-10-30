@@ -17,33 +17,31 @@ Cache individual components at the CDN layer. Each fragment gets its own TTL. Ze
 
 ---
 
-## ✨ Pourquoi VuESI ?
+## ✨ Why VuESI?
 
-- **Granularité maximale** — chaque composant a son propre `Cache-Control`. Un header, un fil de commentaires, une sidebar : TTL distincts, invalidations chirurgicales.
-- **Zéro code côté proxy** — un seul `useESI()` suffit. VuESI génère les tags `<esi:include>` et l'en-tête `Surrogate-Control` automatiquement.
-- **Hydratation sans re-fetch** — les props sont injectées via `window.__VUESI__[id]` à la première réponse. Vue reprend la main sans appel réseau supplémentaire.
-- **Compatible Varnish, Nginx, Fastly** — tout reverse proxy supportant ESI/1.0 fonctionne sans configuration spécifique.
+- **Component-level granularity** — each component gets its own `Cache-Control`. A header, a comment feed, a sidebar: separate TTLs, surgical invalidations.
+- **Zero proxy configuration** — one `useESI()` call is all it takes. VuESI emits `<esi:include>` tags and the `Surrogate-Control` header automatically.
+- **Hydration without re-fetch** — props are injected via `window.__VUESI__[id]` on the first response. Vue picks up server state without an extra network round-trip.
+- **Works with Varnish, Nginx, Fastly** — any reverse proxy supporting ESI/1.0 works out of the box.
 
 ---
 
 ## 🚀 Quickstart
 
 ```bash
-# 1. Installer
+# 1. Install
 yarn add @jamyouss/vuesi
-
-# 2. Déclarer le module
 ```
 
 ```ts
-// nuxt.config.ts
+// nuxt.config.ts — 2. Register the module
 export default defineNuxtConfig({
   modules: ['@jamyouss/vuesi']
 })
 ```
 
 ```bash
-# 3. (optionnel) Lancer Varnish en local pour tester l'ESI de bout en bout
+# 3. (optional) Run Varnish locally for end-to-end ESI testing
 cp docker-compose.yml.dist docker-compose.yml && docker-compose up
 ```
 
@@ -62,38 +60,38 @@ sequenceDiagram
     V->>N: Cache miss → GET /page
     N-->>V: HTML + <esi:include src="/api/_fragment?component=X"><br/>Surrogate-Control: content=ESI/1.0
     V->>F: GET /api/_fragment?component=X
-    F->>F: Charge registry · Vuesi.props() · render
+    F->>F: Load registry · Vuesi.props() · render
     F-->>V: Fragment HTML<br/>Cache-Control: public, max-age=120
-    Note over V: Fragment mis en cache indépendamment
-    V-->>B: Page assemblée
-    B->>B: Vue hydrate depuis window.__VUESI__[id]
+    Note over V: Fragment cached independently
+    V-->>B: Assembled page
+    B->>B: Vue hydrates from window.__VUESI__[id]
 ```
 
 ---
 
-## 📦 Fonctionnalités
+## 📦 Features
 
-| Fonctionnalité | Détail |
+| Feature | Detail |
 |---|---|
-| `<esi:include>` automatique | Généré côté serveur par `useESI()`, transparent pour le reste de l'app |
-| Cache-Control par fragment | Chaque composant déclare son propre TTL via `Vuesi.cacheControl` |
-| Hydratation optimisée | Props sérialisées en inline script — pas de re-fetch au montage client |
-| Registry auto-généré | Scan des composants au build ; seuls les composants Nuxt auto-importés sont exposés |
-| Gestion des erreurs | `onerror="continue"` activé par défaut — une erreur de fragment ne casse pas la page |
-| Docker + Varnish inclus | `docker-compose.yml.dist` prêt à l'emploi pour tester en local |
+| Automatic `<esi:include>` | Emitted server-side by `useESI()`, transparent to the rest of the app |
+| Per-fragment Cache-Control | Each component declares its own TTL via `Vuesi.cacheControl` |
+| Optimized hydration | Props serialized into an inline script — no re-fetch on client mount |
+| Auto-generated registry | Components scanned at build time; only Nuxt auto-imported components are exposed |
+| Error resilience | `onerror="continue"` enabled by default — a fragment error won't break the page |
+| Docker + Varnish included | `docker-compose.yml.dist` ready to use for local ESI testing |
 
 ---
 
 ## 📖 Usage
 
-### 1. Composant ESI
+### 1. ESI component
 
-Exporter un objet `Vuesi` depuis le composant à cacher. `props()` est appelé côté serveur à chaque rendu du fragment.
+Export a `Vuesi` object from any component you want independently cached. `props()` runs server-side on every fragment render.
 
 ```vue
 <!-- components/Welcome.vue -->
 <template>
-  <p>Bonjour {{ username }}</p>
+  <p>Hello {{ username }}</p>
 </template>
 
 <script lang="ts">
@@ -113,7 +111,7 @@ defineProps<{ username: string }>()
 </script>
 ```
 
-### 2. Utilisation dans une page
+### 2. Use it in a page
 
 ```vue
 <template>
@@ -127,23 +125,23 @@ const WelcomeESI = useESI('Welcome', resolveComponent('Welcome'))
 </script>
 ```
 
-`useESI(name, component)` retourne un composant qui :
-- émet `<esi:include>` côté **serveur**
-- hydrate via `window.__VUESI__[id]` côté **client**
+`useESI(name, component)` returns a component that:
+- emits `<esi:include>` on the **server**
+- hydrates via `window.__VUESI__[id]` on the **client**
 
 > [!NOTE]
-> Le premier argument doit correspondre au nom PascalCase tel qu'enregistré par Nuxt (`'Welcome'`, `'Comments'`…).
+> The first argument must match the PascalCase name as registered by Nuxt (`'Welcome'`, `'Comments'`…).
 
 ### 3. Reverse proxy
 
-Tout proxy compatible ESI/1.0 fonctionne sans configuration supplémentaire. VuESI pose lui-même l'en-tête `Surrogate-Control: content=ESI/1.0`.
+Any ESI/1.0-compatible proxy works without additional setup. VuESI sets the `Surrogate-Control: content=ESI/1.0` header itself.
 
-Pour développer en local avec Varnish :
+To develop locally with Varnish:
 
 ```bash
 cp docker-compose.yml.dist docker-compose.yml
 docker-compose up
-# App disponible via Varnish sur http://localhost:8080
+# App available through Varnish at http://localhost:8080
 ```
 
 ---
@@ -155,27 +153,27 @@ docker-compose up
 export default defineNuxtConfig({
   modules: ['@jamyouss/vuesi'],
   vuesi: {
-    enabled: true,            // Désactiver pour le rendu classique (dev/test)
-    fragmentPath: '/api/_fragment', // Chemin du endpoint fragment
-    ignoreErrors: true        // onerror="continue" sur les <esi:include>
+    enabled: true,                  // Set to false for classic SSR (dev/test)
+    fragmentPath: '/api/_fragment', // Fragment endpoint path
+    ignoreErrors: true              // onerror="continue" on <esi:include> tags
   }
 })
 ```
 
-| Option | Type | Défaut | Description |
+| Option | Type | Default | Description |
 |---|---|---|---|
-| `enabled` | `boolean` | `true` | Active/désactive la génération des tags ESI |
-| `fragmentPath` | `string` | `/api/_fragment` | URL du endpoint fragment |
-| `ignoreErrors` | `boolean` | `true` | Ajoute `onerror="continue"` aux `<esi:include>` |
+| `enabled` | `boolean` | `true` | Enable/disable ESI tag generation |
+| `fragmentPath` | `string` | `/api/_fragment` | Fragment endpoint URL path |
+| `ignoreErrors` | `boolean` | `true` | Adds `onerror="continue"` to `<esi:include>` tags |
 
 ---
 
-## 🔒 Sécurité
+## 🔒 Security
 
 > [!WARNING]
-> **Props dans les URLs** — les props passées à un composant ESI sont sérialisées dans la query string du fragment (visibles dans les logs proxy et les clés de cache). Ne pas y mettre de données sensibles. Utiliser `Vuesi.props()` pour fetcher les données confidentielles côté serveur.
+> **Props in URLs** — props passed to an ESI-wrapped component are serialized into the fragment query string (visible in proxy logs and cache keys). Never pass sensitive data as props. Use `Vuesi.props()` to fetch confidential data server-side instead.
 
-**Registry fermé** — seuls les composants enregistrés par l'auto-import Nuxt sont accessibles via le endpoint fragment. Les chemins de fichiers arbitraires sont rejetés.
+**Closed registry** — only components registered by Nuxt's auto-import are accessible through the fragment endpoint. Arbitrary file paths are rejected.
 
 ---
 
@@ -187,36 +185,36 @@ export default defineNuxtConfig({
 function useESI(name: string, component: Component): Component
 ```
 
-| Paramètre | Type | Description |
+| Parameter | Type | Description |
 |---|---|---|
-| `name` | `string` | Nom PascalCase du composant (auto-import Nuxt) |
-| `component` | `Component` | Instance résolue via `resolveComponent()` |
+| `name` | `string` | PascalCase component name as registered by Nuxt |
+| `component` | `Component` | Resolved component instance via `resolveComponent()` |
 
 ### `FragmentData`
 
 ```ts
 interface FragmentData {
-  cacheControl?: string                          // Cache-Control du fragment
-  props: () => Promise<Record<string, unknown>>  // Données serveur du composant
+  cacheControl?: string                          // HTTP Cache-Control for this fragment
+  props: () => Promise<Record<string, unknown>>  // Server-side data fetcher
 }
 ```
 
 ---
 
-## 🛠️ Développement
+## 🛠️ Development
 
 ```bash
-yarn install        # Dépendances
-yarn dev:prepare    # Stubs + prepare playground
-yarn dev            # Playground avec hot-reload
-yarn lint           # ESLint
-yarn test           # Vitest (unit + e2e)
-yarn prepack        # Build du module
+yarn install        # Install dependencies
+yarn dev:prepare    # Generate stubs + prepare playground
+yarn dev            # Start playground with hot-reload
+yarn lint           # Run ESLint
+yarn test           # Run Vitest (unit + e2e)
+yarn prepack        # Build the module
 ```
 
 ---
 
-## 📄 Licence
+## 📄 License
 
 [MIT](./LICENSE) © [jamyouss](https://github.com/jamyouss)
 
