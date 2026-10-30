@@ -6,7 +6,10 @@ import { consola } from 'consola'
 describe('fragment e2e', async () => {
   await setup({
     rootDir: path.resolve(__dirname, '../playground'),
-    server: true
+    server: true,
+    // Vitest builds with NODE_ENV=test, which keeps template comments;
+    // production builds strip them, so force that here.
+    nuxtConfig: { vue: { compilerOptions: { comments: false } } }
   })
 
   beforeEach(() => {
@@ -39,6 +42,14 @@ describe('fragment e2e', async () => {
 
     expect(html).toContain('Bonjour')
     expect(html).toContain('Leanne Graham')
+  })
+
+  test('fragment responds with the component markup only, not a full Nuxt page', async () => {
+    const html = await $fetch('/api/_fragment?component=Welcome')
+
+    expect(html).toContain('Bonjour')
+    expect(html).not.toContain('<html')
+    expect(html).not.toContain('__NUXT_DATA__')
   })
 
   test('fragment stores cache-control for response', async () => {

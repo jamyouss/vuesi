@@ -1,13 +1,9 @@
 <template>
-  <!--VUESI_START-->
-  <component
-    :is="resolvedComponent"
-    v-bind="mergedProps"
-  />
-  <!--VUESI_END-->
+  <FragmentContent />
 </template>
 
 <script setup lang="ts">
+import { createCommentVNode, h } from 'vue'
 import { v5 as uuidv5 } from 'uuid'
 import { createError } from 'h3'
 import { getScript } from '../../utils'
@@ -56,4 +52,12 @@ useHead({
     getScript(id, esiProps)
   ]
 })
+
+// Markers rendered as comment vnodes: production builds strip template
+// comments, which hid them from server/plugins/fragment.
+const FragmentContent = () => [
+  createCommentVNode('VUESI_START'),
+  h(resolvedComponent, mergedProps),
+  createCommentVNode('VUESI_END')
+]
 </script>
