@@ -7,7 +7,7 @@ import { h, defineComponent, withAsyncContext } from 'vue'
 import { v5 as uuidv5 } from 'uuid'
 import { appendResponseHeader, getResponseHeaders, setResponseHeader } from 'h3'
 import type { EsiAttributes } from '../../types'
-import { getScript } from '../utils'
+import { advertisesEsi, getScript } from '../utils'
 import { useRuntimeConfig, useRequestHeaders, useHead, useRequestEvent } from '#imports'
 
 // cacheControl values meaning "don't cache/reuse this response" - see the
@@ -23,9 +23,10 @@ export const useESI = (componentName: string, wrappedComponent: Component): Comp
       let esiProps: Record<string, unknown> = {}
 
       if (process.server) {
-        const headers = useRequestHeaders(['x-vuesi-enabled'])
+        const headers = useRequestHeaders(['x-vuesi-enabled', 'surrogate-capability'])
 
-        if (config.public.vuesi.enabled && (!headers['x-vuesi-enabled'] || headers['x-vuesi-enabled'] !== 'false')) {
+        // Without an ESI-capable surrogate in front (direct hit, dev server), <esi:include> would reach the browser unprocessed.
+        if (config.public.vuesi.enabled && headers['x-vuesi-enabled'] !== 'false' && advertisesEsi(headers['surrogate-capability'])) {
           const url = new URL(config.public.vuesi.fragmentPath, 'http://localhost')
           url.searchParams.append('component', componentName)
 
@@ -35,9 +36,9 @@ export const useESI = (componentName: string, wrappedComponent: Component): Comp
 
           const event = useRequestEvent()
           const responseHeaders = getResponseHeaders(event!)
-          const surrogateCapability = responseHeaders['surrogate-control']?.toString()
+          const surrogateControl = responseHeaders['surrogate-control']?.toString()
 
-          if (!surrogateCapability || !surrogateCapability.split(',').includes('content=ESI/1.0')) {
+          if (!surrogateControl || !surrogateControl.split(',').includes('content=ESI/1.0')) {
             appendResponseHeader(event!, 'surrogate-control', 'content=ESI/1.0')
           }
 
@@ -49,7 +50,7 @@ export const useESI = (componentName: string, wrappedComponent: Component): Comp
 
           return () => h('esi:include', esiIncludeAttributes)
         } else {
-          // ESI disabled — import and render the component directly.
+          // ESI disabled or no ESI-capable surrogate — import and render the component directly.
           //
           // This is a plain defineComponent({ async setup() }), not an SFC
           // <script setup>, so it doesn't get the compiler's automatic

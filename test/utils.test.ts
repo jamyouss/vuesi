@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { getScript } from '../src/runtime/utils'
+import { advertisesEsi, getScript } from '../src/runtime/utils'
 
 describe('getScript', () => {
   test('generates correct hydration script', () => {
@@ -35,5 +35,31 @@ describe('getScript', () => {
     const result = getScript('test-id', {})
 
     expect(result.innerHTML).toContain('window.__VUESI__ = window.__VUESI__ || {}')
+  })
+})
+
+describe('advertisesEsi', () => {
+  test.each([
+    'varnish="ESI/1.0"',
+    'varnish=ESI/1.0',
+    'abc="ESI/1.0 ESI-Inline/1.0"',
+    'abc="ESI-Inline/1.0 ESI/1.0"',
+    'cdn="Foo/1.0", varnish="ESI/1.0"',
+    'cdn="Foo/1.0",varnish="esi/1.0"'
+  ])('accepts %s', (value) => {
+    expect(advertisesEsi(value)).toBe(true)
+  })
+
+  test.each([
+    undefined,
+    '',
+    'varnish="Foo/1.0"',
+    'varnish="ESI/2.0"',
+    'varnish="ESI/1.0x"',
+    'varnish="ESI-Inline/1.0"',
+    'ESI/1.0',
+    'garbage'
+  ])('rejects %s', (value) => {
+    expect(advertisesEsi(value)).toBe(false)
   })
 })

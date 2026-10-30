@@ -12,16 +12,16 @@ src/
     composables/useESI.ts            # useESI() composable - wraps components with ESI logic
     pages/api/_fragment.vue           # Fragment endpoint - renders individual components for ESI fetching
     server/plugins/fragment.ts        # Nitro plugin - extracts fragment HTML from full page render
-    utils.ts                         # getScript() - generates client hydration scripts
+    utils.ts                         # getScript() hydration scripts, advertisesEsi() Surrogate-Capability parser
 playground/                          # Dev/test app with example components (Welcome, Comments)
 test/
   fragment.test.ts                   # E2E tests using @nuxt/test-utils
-  utils.test.ts                      # Unit tests for getScript utility
+  utils.test.ts                      # Unit tests for getScript / advertisesEsi
 ```
 
 ### How it works
 
-1. **`useESI(name, component)`** - On server render, emits `<esi:include src="/api/_fragment?component=Name">` instead of the actual component. Sets `surrogate-control: content=ESI/1.0` header.
+1. **`useESI(name, component)`** - On server render, emits `<esi:include src="/api/_fragment?component=Name">` instead of the actual component and sets `surrogate-control: content=ESI/1.0`, but only when `enabled`, the request has no `x-vuesi-enabled: false`, and its `Surrogate-Capability` header advertises `ESI/1.0` (e.g. `varnish="ESI/1.0"`). Otherwise the component is rendered inline (a private/no-store `cacheControl` then downgrades the host page's `cache-control`).
 2. **`/api/_fragment`** - Fragment page receives the component name via query param, loads it from a build-time generated registry (`vuesi-registry.mjs`), calls `Vuesi.props()` for async data, and renders the component.
 3. **Nitro plugin** - Hooks into `render:html` and `render:response` to extract just the fragment content (between `<!--VUESI_START-->` and `<!--VUESI_END-->` markers) instead of returning a full HTML page.
 4. **Client hydration** - Props are serialized into `window.__VUESI__[id]` via inline scripts, allowing client-side hydration without re-fetching data.
@@ -76,7 +76,7 @@ Configured via `nuxt.config.ts` under the `vuesi` key:
 
 ## Docker / Varnish
 
-`docker-compose.yml.dist` provides a dev setup with Node + Varnish for testing ESI processing end-to-end.
+`docker-compose.yml.dist` provides a dev setup with Node + Varnish for testing ESI processing end-to-end. `config/varnish/default.vcl` sets `Surrogate-Capability: varnish=ESI/1.0` in `vcl_recv`; hitting Nuxt directly (no such header) renders components inline. E2E tests asserting `<esi:include` must send that header.
 
 ## Code Style
 

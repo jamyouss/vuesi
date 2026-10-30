@@ -18,6 +18,9 @@ sub vcl_recv
     # Unset x-cache http header as it will be set by this conf
     unset req.http.x-cache;
 
+    # Tell the backend this surrogate processes ESI; without it Vuesi renders components inline
+    set req.http.Surrogate-Capability = "varnish=ESI/1.0";
+
     # Pipe for webpack/vite hmr
     if (req.url ~ "/_nuxt/hmr") {
         return (pipe);

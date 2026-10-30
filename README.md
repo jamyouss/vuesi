@@ -20,9 +20,9 @@ Cache individual components at the CDN layer. Each fragment gets its own TTL. Ze
 ## ✨ Why VuESI?
 
 - **Component-level granularity** — each component gets its own `Cache-Control`. A header, a comment feed, a sidebar: separate TTLs, surgical invalidations.
-- **Zero proxy configuration** — one `useESI()` call is all it takes. VuESI emits `<esi:include>` tags and the `Surrogate-Control` header automatically.
+- **One-line proxy setup** — one `useESI()` call is all it takes. VuESI emits `<esi:include>` tags and the `Surrogate-Control` header automatically, as soon as the proxy advertises `Surrogate-Capability: ESI/1.0`.
 - **Hydration without re-fetch** — props are injected via `window.__VUESI__[id]` on the first response. Vue picks up server state without an extra network round-trip.
-- **Works with Varnish, Nginx, Fastly** — any reverse proxy supporting ESI/1.0 works out of the box.
+- **Works with Varnish, Nginx, Fastly** — any reverse proxy supporting ESI/1.0 works once it sends `Surrogate-Capability`.
 
 ---
 
@@ -57,7 +57,7 @@ sequenceDiagram
     participant F as /api/_fragment
 
     B->>V: GET /page
-    V->>N: Cache miss → GET /page
+    V->>N: Cache miss → GET /page<br/>Surrogate-Capability: varnish="ESI/1.0"
     N-->>V: HTML + <esi:include src="/api/_fragment?component=X"><br/>Surrogate-Control: content=ESI/1.0
     V->>F: GET /api/_fragment?component=X
     F->>F: Load registry · Vuesi.props() · render
@@ -126,7 +126,7 @@ const WelcomeESI = useESI('Welcome', resolveComponent('Welcome'))
 ```
 
 `useESI(name, component)` returns a component that:
-- emits `<esi:include>` on the **server**
+- emits `<esi:include>` on the **server** when the request comes through an ESI-capable surrogate, and renders the component inline otherwise
 - hydrates via `window.__VUESI__[id]` on the **client**
 
 > [!NOTE]
@@ -134,7 +134,17 @@ const WelcomeESI = useESI('Welcome', resolveComponent('Welcome'))
 
 ### 3. Reverse proxy
 
-Any ESI/1.0-compatible proxy works without additional setup. VuESI sets the `Surrogate-Control: content=ESI/1.0` header itself.
+VuESI only emits `<esi:include>` when the request advertises ESI support through the [`Surrogate-Capability`](https://www.w3.org/TR/edge-arch/) header (any device token, value containing `ESI/1.0`). It then sets the `Surrogate-Control: content=ESI/1.0` response header itself.
+
+With Varnish, add this to `vcl_recv`:
+
+```vcl
+set req.http.Surrogate-Capability = "varnish=ESI/1.0";
+```
+
+Without that header (direct access to Nuxt, dev server, proxy without ESI), components are rendered inline like regular SSR, so the page stays complete instead of shipping raw `<esi:include>` tags the browser would ignore. A private component (`cacheControl` with `private`, `no-store` or `no-cache`) rendered inline also downgrades the page's `Cache-Control` to its own value.
+
+Sending `x-vuesi-enabled: false` forces inline rendering even through an ESI-capable surrogate.
 
 To develop locally with Varnish:
 
