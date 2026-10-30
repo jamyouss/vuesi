@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/jamyouss/vuesi/compare/v1.0.1...v1.1.0) (2026-10-30)
+
+
+### Features
+
+* only emit esi:include when the surrogate advertises ESI via Surrogate-Capability ([4bfe862](https://github.com/jamyouss/vuesi/commit/4bfe862f20d7d7414292568748102deca1e9edfc))
+
 ## [1.0.1](https://github.com/jamyouss/vuesi/compare/v1.0.0...v1.0.1) (2026-10-30)
 
 
