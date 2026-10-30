@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/jamyouss/vuesi/compare/v1.0.0...v1.0.1) (2026-10-30)
+
+
+### Bug Fixes
+
+* keep fragment markers in production builds ([6e9c0c5](https://github.com/jamyouss/vuesi/commit/6e9c0c5d66b8ac85b47e3cb57802a4bec8a4e0a0))
+
 # 1.0.0 (2026-09-25)
 
 
