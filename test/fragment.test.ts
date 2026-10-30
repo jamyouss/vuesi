@@ -3,6 +3,8 @@ import { describe, test, expect, beforeEach } from 'vitest'
 import { setup, $fetch, useTestContext } from '@nuxt/test-utils/e2e'
 import { consola } from 'consola'
 
+const ESI_SURROGATE = { 'surrogate-capability': 'varnish="ESI/1.0"' }
+
 describe('fragment e2e', async () => {
   await setup({
     rootDir: path.resolve(__dirname, '../playground'),
@@ -17,7 +19,7 @@ describe('fragment e2e', async () => {
   })
 
   test('page contains esi:include tags', async () => {
-    const html = await $fetch('/')
+    const html = await $fetch('/', { headers: ESI_SURROGATE })
 
     expect(html).toContain('<esi:include')
     expect(html).toMatch(/src="\/api\/_fragment\?component=Welcome"/)
@@ -25,16 +27,27 @@ describe('fragment e2e', async () => {
   })
 
   test('esi:include tags have onerror="continue" by default', async () => {
-    const html = await $fetch('/')
+    const html = await $fetch('/', { headers: ESI_SURROGATE })
 
     expect(html).toMatch(/onerror="continue"/)
   })
 
   test('page sets surrogate-control header', async () => {
     const ctx = useTestContext()
-    const response = await fetch(ctx.url + '/')
+    const response = await fetch(ctx.url + '/', { headers: ESI_SURROGATE })
 
     expect(response.headers.get('surrogate-control')).toContain('content=ESI/1.0')
+  })
+
+  test('page renders components inline when no surrogate advertises ESI', async () => {
+    const ctx = useTestContext()
+    const response = await fetch(ctx.url + '/')
+    const html = await response.text()
+
+    expect(html).not.toContain('<esi:include')
+    expect(html).toContain('Bonjour')
+    expect(html).toContain('Leanne Graham')
+    expect(response.headers.get('surrogate-control')).toBeNull()
   })
 
   test('fragment renders Welcome component', async () => {
@@ -97,7 +110,7 @@ describe('fragment e2e', async () => {
   test('a private component rendered inline (ESI disabled) downgrades the host page cache-control', async () => {
     const ctx = useTestContext()
     const response = await fetch(ctx.url + '/?private=true', {
-      headers: { 'x-vuesi-enabled': 'false' }
+      headers: { ...ESI_SURROGATE, 'x-vuesi-enabled': 'false' }
     })
     const html = await response.text()
 
@@ -112,7 +125,7 @@ describe('fragment e2e', async () => {
   test('a page with only public components keeps its own cache-control when ESI is disabled', async () => {
     const ctx = useTestContext()
     const response = await fetch(ctx.url + '/', {
-      headers: { 'x-vuesi-enabled': 'false' }
+      headers: { ...ESI_SURROGATE, 'x-vuesi-enabled': 'false' }
     })
 
     expect(response.headers.get('cache-control')).toBe('public, max-age=3600')
