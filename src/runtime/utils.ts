@@ -1,3 +1,18 @@
+import type { EsiAttributes } from '../types'
+
+const HTML_ATTRIBUTE_ESCAPES: Record<string, string> = { '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }
+
+// ESI 1.0 declares <esi:include/> empty: a separate end tag is an error to an ESI processor
+// (Varnish: "</esi:include> illegal end-tag"). Vue renders any non-HTML-void tag with one,
+// so the tag is written as raw markup instead.
+export const esiInclude = (attributes: EsiAttributes): string => {
+  const serialized = Object.entries(attributes)
+    .map(([name, value]) => `${name}="${String(value).replace(/[&"<>]/g, char => HTML_ATTRIBUTE_ESCAPES[char]!)}"`)
+    .join(' ')
+
+  return `<esi:include ${serialized}/>`
+}
+
 export const getScript = (id: string, props: Record<string, unknown>) => {
   const serialized = JSON.stringify(props).replace(/</g, '\\u003c')
 
