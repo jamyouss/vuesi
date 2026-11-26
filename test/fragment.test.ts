@@ -24,6 +24,9 @@ describe('fragment e2e', async () => {
     expect(html).toContain('<esi:include')
     expect(html).toMatch(/src="\/api\/_fragment\?component=Welcome"/)
     expect(html).toMatch(/src="\/api\/_fragment\?component=Comments"/)
+    // ESI 1.0 empty element: an end tag is an error to Varnish ("illegal end-tag").
+    expect(html).toMatch(/<esi:include src="\/api\/_fragment\?component=Welcome" onerror="continue"\/>/)
+    expect(html).not.toContain('</esi:include>')
   })
 
   test('esi:include tags have onerror="continue" by default', async () => {

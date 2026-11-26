@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { advertisesEsi, getScript } from '../src/runtime/utils'
+import { advertisesEsi, esiInclude, getScript } from '../src/runtime/utils'
 
 describe('getScript', () => {
   test('generates correct hydration script', () => {
@@ -35,6 +35,18 @@ describe('getScript', () => {
     const result = getScript('test-id', {})
 
     expect(result.innerHTML).toContain('window.__VUESI__ = window.__VUESI__ || {}')
+  })
+})
+
+describe('esiInclude', () => {
+  test('writes a self-closing tag', () => {
+    expect(esiInclude({ src: '/api/_fragment?component=A', onerror: 'continue' }))
+      .toBe('<esi:include src="/api/_fragment?component=A" onerror="continue"/>')
+  })
+
+  test('escapes attribute values, & included (an ESI processor decodes &amp;)', () => {
+    expect(esiInclude({ src: '/f?component=A&props={"x":"<y>"}' }))
+      .toBe('<esi:include src="/f?component=A&amp;props={&quot;x&quot;:&quot;&lt;y&gt;&quot;}"/>')
   })
 })
 

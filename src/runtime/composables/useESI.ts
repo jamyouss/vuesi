@@ -3,11 +3,11 @@ import type { Component, VNode } from 'vue'
 // (hence the ignores) - see its usage below for why this file needs it.
 // @ts-ignore -- exported at runtime, not in Vue's public type declarations
 // eslint-disable-next-line import/named -- same as above
-import { h, defineComponent, withAsyncContext } from 'vue'
+import { h, defineComponent, withAsyncContext, createStaticVNode } from 'vue'
 import { v5 as uuidv5 } from 'uuid'
 import { appendResponseHeader, getResponseHeaders, setResponseHeader } from 'h3'
 import type { EsiAttributes } from '../../types'
-import { advertisesEsi, getScript } from '../utils'
+import { advertisesEsi, esiInclude, getScript } from '../utils'
 import { useRuntimeConfig, useRequestHeaders, useHead, useRequestEvent } from '#imports'
 
 // cacheControl values meaning "don't cache/reuse this response" - see the
@@ -48,7 +48,7 @@ export const useESI = (componentName: string, wrappedComponent: Component): Comp
             esiIncludeAttributes.onerror = 'continue'
           }
 
-          return () => h('esi:include', esiIncludeAttributes)
+          return () => createStaticVNode(esiInclude(esiIncludeAttributes), 1)
         } else {
           // ESI disabled or no ESI-capable surrogate — import and render the component directly.
           //
