@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/jamyouss/vuesi/compare/v1.1.0...v1.1.1) (2026-11-26)
+
+
+### Bug Fixes
+
+* self-closing esi:include, as ESI 1.0 requires ([e0fe344](https://github.com/jamyouss/vuesi/commit/e0fe3448bd5e1a463f97b78ed5609a63232a23eb))
+
 # [1.1.0](https://github.com/jamyouss/vuesi/compare/v1.0.1...v1.1.0) (2026-10-30)
 
 
